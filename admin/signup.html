@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker - Register</title>
+    <link rel="stylesheet" href="./css/signup.css">
+</head>
+<body>
+    <div class="container">
+        <h2>School Bus Tracker <span>🚌</span></h2>
+        <form id="registerForm" >
+            <!-- Student Information -->
+            <fieldset>
+                <legend>Admin Signup</legend>
+                <div class="input-row">
+                    <label>First Name:</label>
+                    <input type="text" id="firstName" name="firstName">
+                    
+                    <label>Last Name:</label>
+                    <input type="text" id="lastName" name="lastName" >
+                    
+                </div>
+                <div class="input-row">
+                    <label>School Name:</label>
+                    <input type="text" id="schoolName" name="schoolName">
+
+                    <label>Contact:</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" >
+                </div>
+            </fieldset>
+
+            <!-- Address Information -->
+            <fieldset>
+                <legend>Address</legend>
+                <label>School Address:</label>
+                <input type="text" id="schoolAddress" name="schoolAddress" placeholder="Street, City" >
+                
+                <label>State:</label>
+                <input type="text" id="state" name="state" placeholder="Missouri">
+                
+                <label>ZIP Code:</label>
+                <input type="text" id="zipCode" name="zipcode" placeholder="XXXXXX" autocomplete="postal-code">
+            </fieldset>
+
+            <!-- Parent Information -->
+            <fieldset>
+                <legend>Security Questions</legend>
+            
+                <label for="question1">Question 1:</label>
+                <select id="question1" name="question1" required>
+                    <option value="" disabled selected>Select a question</option>
+                    <option value="What is your favorite color?">What is your favorite color?</option>
+                    <option value="What is your pet's name?">What is your pet's name?</option>
+                    <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                    <option value="What was the name of your first school?">What was the name of your first school?</option>
+                    <option value="What is your favorite food?">What is your favorite food?</option>
+                </select>
+            
+                <label for="answer1">Answer:</label>
+                <input type="text" id="answer1" name="answer1" placeholder="Answer" required>
+            
+                <label for="question2">Question 2:</label>
+                <select id="question2" name="question2" required>
+                    <option value="" disabled selected>Select a question</option>
+                    <option value="What is your favorite color?">What is your favorite color?</option>
+                    <option value="What is your pet's name?">What is your pet's name?</option>
+                    <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                    <option value="What was the name of your first school?">What was the name of your first school?</option>
+                    <option value="What is your favorite food?">What is your favorite food?</option>
+                </select>
+            
+                <label for="answer2">Answer:</label>
+                <input type="text" id="answer2" name="answer2" placeholder="Answer" required>
+            
+            </fieldset>
+            
+
+            <fieldset>
+                <legend>Account Information</legend>
+                <span id="error" style="color: red; display: none;"></span>
+                <label>Create Username:</label>
+                <input type="text" id="username" name="username" placeholder="example@mail.com" autocomplete="email">
+                
+                <label>Create New Password:</label>
+                <input type="password" id="password" name="password" placeholder="A-Z,a-z,0-9, @#$%&" autocomplete="new-password">
+                
+                <label>Confirm New Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" >
+            </fieldset>
+
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="index.html">Sign In</a>
+        </p>
+    </div>
+    <script src="./scripts/signup.js"></script>
+</body>
+</html>

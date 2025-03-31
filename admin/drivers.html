@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Drivers</title>
+    <style>
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+        body {
+        font-family: 'Arial', sans-serif;
+        background-color: #1e1e2f;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    header {
+        background-color: #2a2a40;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    header h2 {
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    nav {
+        display: flex;
+        gap: 20px;
+    }
+
+    nav a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 16px;
+        transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+        color: #007bff;
+    }
+
+        .main-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+            background-image: url('./assets/bus.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            min-height: calc(100vh - 60px);
+        }
+
+        .main-content h2 {
+            color: #000;
+            font-size: 36px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .container {
+            background: rgb(255, 255, 255);
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: fit-content;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #333;
+            margin: 40px;
+            overflow: scroll;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .form input {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            transition: background 0.3s ease;
+            width: auto;
+        }
+
+        .form input:focus {
+            background: rgba(255, 255, 255, 1);
+            outline: none;
+            border-color: #2575fc;
+        }
+
+        .form button {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background: #fba300;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: auto;
+        }
+
+        .form button:hover {
+            background: #f5b235;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-radius: 5px;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background: #f5b53f;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        tr:hover {
+            background: rgba(37, 117, 252, 0.1);
+        }
+
+
+        .actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .actions button.edit {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .actions button.delete {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .actions button.chat {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .actions button:hover {
+            opacity: 0.9;
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2a2a40; 
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25); 
+            z-index: 1001; 
+        }
+
+        .popup h3 {
+            margin-top: 0;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 40px;
+            text-decoration: underline;
+        }
+
+        .route-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .route-options label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: #000;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .route-options label:hover {
+            background-color: #c9c9c9;
+        }
+
+        .route-options input[type="radio"] {
+            display: block;
+            margin-right: 10px;
+        }
+
+        .route-options input[type="radio"]:checked + span {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .popup-buttons{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.assign-bus {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        button.save {
+            background-color: #28a745;
+            color: #fff;
+            
+        }
+
+        button.cancel {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+    <link rel="stylesheet" href="./css/chat.css">
+    <link rel="stylesheet" href="./css/search.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.1.2/css/material-design-iconic-font.min.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./scripts/auth.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="title"><h2>Admin - School Bus Tracker <span>🚌</span></h2></div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="routes.html">Routes</a>
+            <a href="#">Drivers</a>
+            <a href="chats.html">Chats</a>
+            <a href="students.html">Students</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h2>Manage Drivers</h2>
+            
+            <form id="addDriverForm" class="form">
+                <input type="text" id="firstName" placeholder="First Name" required>
+                <input type="text" id="lastName" placeholder="Last Name" required>
+                <input type="email" id="username" placeholder="Username" required>
+                <button type="submit">Add Driver</button>
+            </form>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search Driver..." onkeyup="searchDrivers()">
+            </div>
+            
+            <table id="driversTable">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th class="sortable" onclick="sortTable(1)">First Name</th>
+                        <th class="sortable" onclick="sortTable(2)">Last Name</th>
+                        <th class="sortable" onclick="sortTable(3)">Username</th>
+                        <th>Bus Route</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="chat-container" id="chat-container">
+        <div class="header">
+            <span id="chatName">Chatter Box!</span>
+            <button class="close-btn" onclick="closeChat()">×</button>
+        </div>
+        <div class="message-section" id="message-section"></div>
+        <div class="input-section">
+            <input id="input" type="text" placeholder="Type a message" autocomplete="off" autofocus>
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="zmdi zmdi-mail-send"></i>
+            </button>
+        </div>
+    </div>
+    
+
+    <script src="./scripts/drivers.js"></script>
+    <script>
+
+        function searchDrivers() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let table = document.getElementById('driversTable');
+            let rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                let firstName = rows[i].getElementsByTagName('td')[1];
+                let lastName = rows[i].getElementsByTagName('td')[2];
+                if (firstName && lastName) {
+                    let textValue = firstName.textContent.toLowerCase() + ' ' + lastName.textContent.toLowerCase();
+                    rows[i].style.display = textValue.includes(input) ? '' : 'none';
+                }
+            }
+        }
+
+        function sortTable(colIndex) {
+            let table = document.getElementById("driversTable");
+            let tbody = table.querySelector("tbody");
+            let rows = Array.from(table.rows).slice(1);
+            let header = table.rows[0].cells[colIndex];
+            let isAscending = header.classList.toggle("desc") ? -1 : 1;
+            
+            rows.sort((rowA, rowB) => {
+                let a = rowA.cells[colIndex].textContent.toLowerCase();
+                let b = rowB.cells[colIndex].textContent.toLowerCase();
+                return a.localeCompare(b) * isAscending;
+            });
+            
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+                tbody.appendChild(row);
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+            body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e2f;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2a2a40;
+            padding: 15px 20px;
+            display: flex;
+            color: #fff;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h2 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+
+        .main-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+            background-image: url('./assets/bus.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            min-height: calc(100vh - 60px);
+        }
+
+        .container {
+            width: 100%;
+            margin: 40px 0px;
+            display: flex;
+            min-height: 92vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-area {
+            display: flex;
+            width: 100%;
+            margin: 0px 40px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            height: 95vh;
+        }
+
+        .chatlist {
+            width: 320px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 70vh;
+        }
+
+        .chat-header {
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background: #34495e;
+        }
+
+        .chat-selection {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background: #34495e;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .select-driver, .select-student {
+            padding: 10px 20px;
+            background: transparent;
+            color: #fff;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            position: relative;
+        }
+
+        .select-driver:hover, .select-student:hover {
+            transform: scale(1.05);
+            color: #f1c40f;
+        }
+
+        .active-select {
+            border-bottom: 3px solid #ffffff;
+        }
+
+        .chat-lists {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .chat-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chat-item div h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .chat-item div p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        
+        .chatbox {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-head {
+            padding: 15px;
+            background: #ecf0f1;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .msg-body {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-body li {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 75%;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+
+        .sender {
+            align-self: flex-start;
+            background: #dfe6e9;
+            text-align: left;
+        }
+
+        .reply {
+            align-self: flex-end;
+            background: #74b9ff;
+            color: white;
+            text-align: right;
+        }
+
+        .send-box {
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .send-box input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        .send-box button {
+            padding: 10px 15px;
+            border: none;
+            background: #2980b9;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .new-msg{
+            display: none;
+            font-size: 8px;
+            opacity: 0.9;
+            color: #08ff51;
+        }
+    </style>
+     <script src="/socket.io/socket.io.js"></script>
+     <script src="./scripts/auth.js"></script>
+</head>
+<body>
+    <header>
+        <div class="title"><h2>Admin - School Bus Tracker <span>🚌</span></h2></div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="routes.html">Routes</a>
+            <a href="drivers.html">Drivers</a>
+            <a href="#">Chats</a>
+            <a href="students.html">Students</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="chat-area">
+            <div class="chatlist">
+                <div class="chat-header">Chats</div>
+                <div class="chat-selection">
+                    <button class="select-driver active-select" onclick="displayDriver()">Driver</button>
+                    <button class="select-student" onclick="displayStudent()">Students</button>
+                </div>
+                <div class="chat-lists" id="chatList">
+                    <div id="driverList">
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
+                            <div>
+                                <h3>John Doe</h3>
+                                <p>Online</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="">
+                            <div>
+                                <h3>Jane Smith</h3>
+                                <p>Typing...</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="">
+                            <div>
+                                <h3>Michael Brown</h3>
+                                <p>Last seen 10m ago</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
+                            <div>
+                                <h3>John Doe</h3>
+                                <p>Online</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="">
+                            <div>
+                                <h3>Jane Smith</h3>
+                                <p>Typing...</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="">
+                            <div>
+                                <h3>Michael Brown</h3>
+                                <p>Last seen 10m ago</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
+                            <div>
+                                <h3>John Doe</h3>
+                                <p>Online</p>
+                            </div>
+                        </a>
+                    </div>
+                    <diV id="studentList" style="display: none;">
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="">
+                            <div>
+                                <h3>Jane Smith</h3>
+                                <p>Typing...</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="">
+                            <div>
+                                <h3>Michael Brown</h3>
+                                <p>Last seen 10m ago</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
+                            <div>
+                                <h3>John Doe</h3>
+                                <p>Online</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="">
+                            <div>
+                                <h3>Jane Smith</h3>
+                                <p>Typing...</p>
+                            </div>
+                        </a>
+                        <a class="chat-item">
+                            <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="">
+                            <div>
+                                <h3>Michael Brown</h3>
+                                <p>Last seen 10m ago</p>
+                            </div>
+                        </a>
+                    </diV>
+                </div>
+            </div>
+
+            <div class="chatbox">
+                <div class="msg-head">
+                    <h3 id="chatName"></h3>
+                    <p id="Username"></p>
+                </div>
+                <div class="msg-body">
+                    <ul id="messages">
+                        
+                    </ul>
+                </div>
+                <div class="send-box">
+                    <input type="text" id="textMessage" placeholder="Write a message...">
+                    <button type="submit" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./scripts/chat.js"></script>
+</body>
+</html>
