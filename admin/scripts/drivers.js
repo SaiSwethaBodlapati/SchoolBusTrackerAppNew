@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         drivers.forEach((driver, index) => {
             const matchedRoute = routes.find(route => route.driver && route.driver.driverId === driver.username);
             const routeDisplay = matchedRoute 
-                ? matchedRoute.routeId 
+                ? `${matchedRoute.routeId} <span class="removeDriver" onclick='removeRouteDriver("${matchedRoute.routeId}")'>❌</span>`
                 : `<button class="assign-route" data-driver-id="${driver.username}" data-driver-name="${driver.firstName} ${driver.lastName}">Assign Route</button>`;
             
             const row = document.createElement('tr');
@@ -124,7 +124,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
+    window.removeRouteDriver = async (routeId) => {
+        if (!routeId) {
+            alert('Please select a route');
+            return;
+        }
 
+        console.log(routeId)
+    
+        try {
+            const response = await fetch(`/admin/removeRouteDriver/${routeId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ routeId }),
+            });
+    
+            if (response.ok) {
+                await fetchRoutes();
+                await fetchDrivers();
+            } else {
+                alert('Failed to assign route');
+            }
+        } catch (error) {
+            console.error('Error assigning route:', error);
+            alert('Error assigning route');
+        }
+    }
     
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
