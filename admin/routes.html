@@ -351,7 +351,7 @@
                     <div class="route-info">
                         <h3>Route ID: ${route.routeId}</h3>
                         <p>From: ${route.origin.address} → To: ${route.destination.address}</p>
-                        <p>Bus: ${route.bus.regNumber} | Driver: ${route.driver.name}</p>
+                        <p>Bus: ${route.bus.regNumber} | Driver: ${route.driver ? route.driver.name : 'Not assigned'}</p>
                     </div>
                     <div class="route-actions">
                         <button class="view" onclick="viewRoute('${route.routeId}')">View</button>
@@ -373,7 +373,7 @@
                     <p><strong>Origin:</strong> ${route.origin.address}</p>
                     <p><strong>Destination:</strong> ${route.destination.address}</p>
                     <p><strong>Bus:</strong> ${route.bus.regNumber}</p>
-                    <p><strong>Driver:</strong> ${route.driver.name}</p>
+                    <p><strong>Driver:</strong> ${route.driver ? route.driver.name : 'Not assigned'}</p>
                     <p><strong>Pickup Time:</strong> ${route.pickupTime}</p>
                     <p><strong>Drop Time:</strong> ${route.dropTime}</p>
                     <p><strong>Stops:</strong></p>
