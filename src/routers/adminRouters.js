@@ -23,5 +23,6 @@ router.put('/assignStudentRoute/:studentId', adminControllers.updateStudentRoute
 router.put('/assignDriverRoute/:routeId', adminControllers.updateDriverRoute);
 
 router.delete('/drivers/:id', adminControllers.deleteDriver);
+router.delete('/removeRouteDriver/:routeId', adminControllers.deleteDriverRoute);
 
 module.exports = router;
