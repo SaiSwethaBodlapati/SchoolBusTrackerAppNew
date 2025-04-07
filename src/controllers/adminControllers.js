@@ -226,6 +226,39 @@ const updateDriverRoute = async (req, res) => {
     }
 };
 
+const deleteDriverRoute = async (req, res) => {
+    try {
+        const { routeId } = req.params;
+
+        const updatedRoute = await busRouteModel.findOneAndUpdate(
+            { routeId: routeId },
+            { 
+                $unset: { 
+                    driver: 1 
+                }
+            },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedRoute) {
+            return res.status(404).json({ message: 'Route not found' });
+        }
+
+        res.status(200).json({ 
+            message: 'Driver removed from route successfully', 
+            route: updatedRoute 
+        });
+    } catch (error) {
+        console.error('Error removing driver from route:', error);
+        res.status(500).json({ 
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
 
 
 
@@ -239,5 +272,6 @@ module.exports = {
     getRoutes,
     routeById,
     updateStudentRoute,
-    updateDriverRoute
+    updateDriverRoute,
+    deleteDriverRoute
 }
