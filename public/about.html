@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker - About</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+            body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e2f;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+        }
+
+        .banner {
+            position: relative;
+            text-align: center;
+            color: white;
+        }
+
+        .banner img {
+            width: 100%;
+            height: auto;
+        }
+
+        .banner-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+        }
+
+        .banner-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .banner-content p,
+        .banner-content ul {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .banner-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .banner-content ul li {
+            margin: 10px 0;
+        }
+
+        footer {
+            background-color: #000;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+        }
+    </style>
+    <script src="./scripts/auth.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <h1>
+                <img src="./assets/busicon.png" alt="School Bus Icon">
+                <a href="dashboard.html" style="color: white; text-decoration: none;"><h1>School Bus Tracker</h1></a>
+            </h1>
+        </nav>
+        <nav>
+            <a href="dashboard.html">Home</a>
+            <a href="chats.html">Chat</a>
+            <a href="about.html">About</a>
+            <a href="profile.html">Profile</a>
+            <a href="contact.html">Contact</a>
+            <a onclick="logout()">Logout</a>
+        </nav>
+    </header>
+
+    <div class="banner">
+        <img src="./assets/bus.png" alt="School Bus">
+        <div class="banner-content">
+            <h2>About Us</h2>
+            <p>School Bus Tracker is a leading school bus tracking app providing real-time GPS tracking for parents and
+                administrators, reducing wait times and enhancing safety.</p>
+            <h3>Our Mission</h3>
+            <p>To empower parents with real-time information about their child's school bus journey, ensuring safety and
+                convenience.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li>Safety Features</li>
+                <li>Real-Time Bus Tracking</li>
+                <li>Route Management & Optimization</li>
+                <li>Notifications for Arrivals & Delays</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>School Address:</p>
+        <p>Northwest Missouri State University<br>
+            800 University Drive<br>
+            Maryville MO<br>
+            64468</p>
+    </footer>
+
+    <script>
+        console.log("About page loaded");
+    </script>
+</body>
+
+</html>

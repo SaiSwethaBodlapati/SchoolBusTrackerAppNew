@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker - Register</title>
+    <link rel="stylesheet" href="./css/style.css">
+    
+</head>
+<body>
+    <div class="container">
+        <h2>School Bus Tracker <span>🚌</span></h2>
+        <form id="registerForm">
+            <!-- Student Information -->
+            <fieldset>
+                <legend>Student Information</legend>
+                <div class="input-row">
+                    <label>First Name:</label>
+                    <input type="text" id="firstName" name="firstName" >
+                    
+                    <label>Last Name:</label>
+                    <input type="text" id="lastName" name="lastName" >
+                    
+                    <label>Class:</label>
+                    <input type="text" id="class" name="class" >
+                </div>
+                <div class="input-row">
+                    <label>Bus Stop:</label>
+                    <input type="text" id="busStop" name="busStop" >
+                    
+                    <label>Student Identification Number:</label>
+                    <input type="text" id="studentId" name="studentId" >
+                    
+                    <label>Bus Pass ID:</label>
+                    <input type="text" id="busPassId" name="busPassId" >
+                </div>
+            </fieldset>
+
+            <!-- Address Information -->
+            <fieldset>
+                <legend>Address</legend>
+                <label>Address Line 1:</label>
+                <input type="text" id="addressLine1" name="addressLine1" >
+                
+                <label>Address Line 2:</label>
+                <input type="text" id="addressLine2" name="addressLine2">
+                
+                <label>City:</label>
+                <input type="text" id="city" name="city" >
+                
+                <label>ZIP Code:</label>
+                <input type="text" id="zipCode" name="zipCode" >
+            </fieldset>
+
+            <!-- Parent Information -->
+            <fieldset>
+                <legend>Parent Information</legend>
+                <div class="input-row">
+                    <label>Father's Name:</label>
+                    <input type="text" id="fatherName" name="fatherName" >
+                    
+                    <label>Father's Phone Number:</label>
+                    <input type="tel" id="fatherPhone" name="fatherPhone" >
+                </div>
+                <div class="input-row">
+                    <label>Mother's Name:</label>
+                    <input type="text" id="motherName" name="motherName" >
+                    
+                    <label>Mother's Phone Number:</label>
+                    <input type="tel" id="motherPhone" name="motherPhone" >
+                </div>
+            </fieldset>
+
+            <!-- Account Information -->
+            <fieldset>
+                <legend>Account Information</legend>
+                <span id="error" style="color: red; display: none;"></span>
+                <label>Create Username:</label>
+                <input type="text" id="username" name="username" >
+                
+                <label>Create New Password:</label>
+                <input type="password" id="password" name="password" >
+                
+                <label>Confirm New Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" >
+            </fieldset>
+
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="index.html">Sign In</a>
+        </p>
+    </div>
+    <script src="./scripts/signup.js"></script>
+</body>
+</html>

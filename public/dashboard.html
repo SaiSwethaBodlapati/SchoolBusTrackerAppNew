@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker - Support</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+            body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e2f;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+        }
+
+        .main-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+            background-image: url('./assets/bus.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            height: calc(100vh - 60px); /* Adjust height to fit below header */
+        }
+
+        .main-content h2 {
+            color: #000;
+            font-size: 36px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background for better readability */
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="./scripts/auth.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <h1>
+                <img src="./assets/busicon.png" alt="School Bus Icon">
+                <a href="dashboard.html" style="color: white; text-decoration: none;"><h1>School Bus Tracker</h1></a>
+            </h1>
+        </nav>
+        <nav>
+            <a href="dashboard.html">Home</a>
+            <a href="chats.html">Chat</a>
+            <a href="about.html">About</a>
+            <a href="profile.html">Profile</a>
+            <a href="contact.html">Contact</a>
+            <a onclick="logout()">Logout</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <h2>Welcome to the Dashboard Page</h2>
+    </main>
+
+    <script>
+        console.log("Support page loaded");
+    </script>
+</body>
+
+</html>

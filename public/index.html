@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker - Login</title>
+    <link rel="stylesheet" href="./css/login.css">
+</head>
+<body>
+    <div class="container">
+        <h2>School Bus Tracker <span>🚌</span></h2>
+        <form id="loginForm">
+            <div class="input-col">
+                <div>
+                    <label for="f-option" class="l-radio">
+                      <input type="radio" id="f-option" name="selector" value="Student" tabindex="1">
+                      <span>Student</span>
+                    </label>
+                    <label for="s-option" class="l-radio">
+                      <input type="radio" id="s-option" name="selector" value="Driver" tabindex="2">
+                      <span>Driver</span>
+                    </label>
+                    <label for="t-option" class="l-radio">
+                      <input type="radio" id="t-option" name="selector" value="Admin" tabindex="3">
+                      <span>Admin</span>
+                    </label>
+                </div>
+                <label>Username:</label>
+                <input type="text" id="username" name="username" required>
+            
+                <label>Password:</label>
+                <input type="password" id="password" name="password" required>
+                
+                <p class="register-link">
+                    <a onclick="forgot()">Forgot Password?</a>
+                </p>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+        
+        <p class="register-link">
+            Don't have an account? <a href="#" onclick="registerPage()">Register</a>
+        </p>
+        
+    </div>
+    <script src="./scripts/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="./css/profile.css">
+    <style>
+        
+        header {
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        header h1 img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+        }
+    </style>
+    <script src="./scripts/auth.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>
+                <img src="./assets/busicon.png" alt="School Bus Icon">
+                <a href="dashboard.html" style="color: white; text-decoration: none;"><h1>School Bus Tracker</h1></a>
+            </h1>
+        </nav>
+        <nav>
+            <a href="dashboard.html">Home</a>
+            <a href="chats.html">Chat</a>
+            <a href="about.html">About</a>
+            <a href="profile.html">Profile</a>
+            <a href="contact.html">Contact</a>
+            <a onclick="logout()">Logout</a>
+        </nav>
+    </header>
+    <section class="main">
+        <div class="edit-profile-container">
+
+            <aside class="profile-sidebar">
+                <div class="profile-card">
+                    <img src="./assets/student_icon.png" id="profilePic" alt="User Avatar">
+                    <h3 id="displayName">Loading...</h3>
+                    <p id="displayEmail">Loading...</p>
+                </div>
+            </aside>
+    
+            <section class="edit-profile-content">
+                <h2>Edit Profile</h2>
+                
+                <div class="tab-container">
+                    <button class="tab active" onclick="switchTab(event, 'studentInfo')">Student Info</button>
+                    <button class="tab" onclick="switchTab(event, 'addressInfo')">Address</button>
+                    <button class="tab" onclick="switchTab(event, 'parentInfo')">Parent Info</button>
+                    <button class="tab" onclick="switchTab(event, 'accountInfo')">Account</button>
+                </div>
+    
+                <form id="editProfileForm">
+    
+                    <div class="tab-content" id="studentInfo">
+                        <div class="input-group">
+                            <label>First Name:</label>
+                            <input type="text" id="firstName" name="firstName">
+                        </div>
+                        <div class="input-group">
+                            <label>Last Name:</label>
+                            <input type="text" id="lastName" name="lastName">
+                        </div>
+                        <div class="input-group">
+                            <label>Class:</label>
+                            <input type="text" id="class" name="class">
+                        </div>
+                        <div class="input-group">
+                            <label>Bus Stop:</label>
+                            <input type="text" id="busStop" name="busStop">
+                        </div>
+                    </div>
+    
+                    <div class="tab-content" id="addressInfo" style="display: none;">
+                        <div class="input-group">
+                            <label>Address Line 1:</label>
+                            <input type="text" id="addressLine1" name="addressLine1">
+                        </div>
+                        <div class="input-group">
+                            <label>City:</label>
+                            <input type="text" id="city" name="city">
+                        </div>
+                        <div class="input-group">
+                            <label>ZIP Code:</label>
+                            <input type="text" id="zipCode" name="zipCode">
+                        </div>
+                    </div>
+    
+                    <div class="tab-content" id="parentInfo" style="display: none;">
+                        <div class="input-group">
+                            <label>Father's Name:</label>
+                            <input type="text" id="fatherName" name="fatherName">
+                        </div>
+                        <div class="input-group">
+                            <label>Mother's Name:</label>
+                            <input type="text" id="motherName" name="motherName">
+                        </div>
+                    </div>
+    
+                    <div class="tab-content" id="accountInfo" style="display: none;">
+                        <div class="input-group">
+                            <label>Username:</label>
+                            <input type="text" id="username" name="username" disabled>
+                        </div>
+                    </div>
+    
+                    <button type="submit" class="save-btn">Save Changes</button>
+                </form>
+            </section>
+        </div>
+    </section>
+    
+
+    <script>
+        const username = localStorage.getItem('email');
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+
+            async function fetchProfile() {
+                try {
+                    const response = await fetch(`/student/profile?username=${username}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+     
+                        document.getElementById("displayName").innerText = `${data.firstName} ${data.lastName}`;
+                        document.getElementById("displayEmail").innerText = data.username;
+
+                        document.getElementById("firstName").value = data.firstName || "";
+                        document.getElementById("lastName").value = data.lastName || "";
+                        document.getElementById("class").value = data.class || "";
+                        document.getElementById("busStop").value = data.busStop || "";
+                        document.getElementById("addressLine1").value = data.addressLine1 || "";
+                        document.getElementById("city").value = data.city || "";
+                        document.getElementById("zipCode").value = data.zipCode || "";
+                        document.getElementById("fatherName").value = data.fatherName || "";
+                        document.getElementById("motherName").value = data.motherName || "";
+                        document.getElementById("username").value = data.username || "";
+                    } else {
+                        console.error("Error fetching profile:", data.message);
+                    }
+                } catch (error) {
+                    console.error("Error fetching profile:", error);
+                }
+            }
+
+            function switchTab(event, tabId) {
+                document.querySelectorAll(".tab-content").forEach(tab => {
+                    tab.style.display = "none";
+                });
+
+                document.querySelectorAll(".tab").forEach(tab => {
+                    tab.classList.remove("active");
+                });
+
+                document.getElementById(tabId).style.display = "block";
+                event.currentTarget.classList.add("active");
+            }
+
+            document.querySelectorAll(".tab").forEach(tab => {
+                tab.addEventListener("click", function (event) {
+                    switchTab(event, this.getAttribute("onclick").split("'")[1]);
+                });
+            });
+
+            document.getElementById("editProfileForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const formData = {
+                    firstName: document.getElementById("firstName").value,
+                    lastName: document.getElementById("lastName").value,
+                    class: document.getElementById("class").value,
+                    busStop: document.getElementById("busStop").value,
+                    addressLine1: document.getElementById("addressLine1").value,
+                    city: document.getElementById("city").value,
+                    zipCode: document.getElementById("zipCode").value,
+                    fatherName: document.getElementById("fatherName").value,
+                    motherName: document.getElementById("motherName").value,
+                };
+
+                try {
+                    const response = await fetch(`/student/update-profile?username=${username}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData),
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert("Profile updated successfully!");
+                        console.log(data);
+                    } else {
+                        alert("Failed to update profile: " + data.message);
+                    }
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                }
+            });
+
+
+            fetchProfile();
+        });
+
+    </script>
+</body>
+</html>

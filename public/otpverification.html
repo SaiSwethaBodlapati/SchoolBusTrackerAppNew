@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Bus Tracker </title>
+    <link rel="stylesheet" href="./css/styleotp.css">
+    <style>
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        }
+
+        input[type="number"] {
+        -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+    <div class="container step1">
+        <h2>School Bus Tracker - Verify Email <span>🚌</span></h2>
+        <br/>
+        <h4>Enter your email address</h4>   
+        <br/>             
+        <p>You will recieve an email with one-time password</p>
+        <br/>
+        <div class="form-group">
+            <input type="email" id="emailAddress" placeholder="Email Address: " onkeyup="validateEmail(this.value)">
+        </div>      
+        <br>         
+        <button type="submit" class="nextButton">Next</button>
+    </div>
+    <div class="container step2">
+        <h2>School Bus Tracker - Verify Email <span>🚌</span></h2>
+        <br/>
+        <h4>Enter one-time-password</h4>               
+        <p>A one-time password has been sent to<span id="verifyEmail"></span></p>
+        <br/>
+        <div class="otp-form">
+            <p>Enter the 4 digit code we sent you via email to continue</p>
+            <div class="otp-group">
+                <input type="number" >
+                <input type="number" >
+                <input type="number" >
+                <input type="number" >
+            </div>
+            <p>Not your email?/Didn't receive code?</p>
+            <a href="javascript:void(0)" onclick="changeMyEmail()">Try Again</a>
+        </div>      
+        <br>         
+        <button type="submit" class="verifyButton">Verify</button>
+    </div>
+    <div class="container step3">
+        <h2>School Bus Tracker <span>🚌</span></h2>
+        <br/>
+        <h4>Enter your new password</h4>   
+        <div class="form-group">
+            <input type="email" id="newPassword" placeholder="New Password" onkeyup="validatePassword(this.value)">
+        </div>
+        <div class="form-group">
+            <input type="email" id="confirmPassword" placeholder="Confirm Password" onkeyup="matchPassword(this.value)">
+        </div>
+        <br>         
+        <button type="submit" class="submitButton">Submit</button>
+    </div>
+    <script src="./scripts/otpscript.js"></script>
+</body>
+</html>
