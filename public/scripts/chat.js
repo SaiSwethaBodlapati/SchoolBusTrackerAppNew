@@ -1,21 +1,15 @@
 
-const socket = io("http://localhost:8000", {
-    auth: {
-        id: localStorage.getItem('email'),
-        role: "student"
-    }
-});  
 
 const driverList = document.getElementById('driverList');
 const adminList = document.getElementById('adminList');
-const senderId = localStorage.getItem('email');
+var senderId = localStorage.getItem('email');
 var drivers = [], admins = [];
 var recipientId, recipientRole;
-
+var routeId;
 
 document.addEventListener('DOMContentLoaded', async () => {
-
-    await fetchDrivers();
+    await fetchStudentRouteId(senderId)
+    if(routeId) await fetchDriver(routeId);
     await fetchAdmins();
 
 });
@@ -59,8 +53,6 @@ function fetchMessages(senderId, recipientId) {
         }
     });
 }
-
-
 
 
 function sendMessage() {
@@ -144,20 +136,66 @@ async function fetchAdmins() {
     }
 }
 
-function renderDrivers() {
-    driverList.innerHTML = "";
-    drivers.forEach(driver => {
-        let template = `<a class="chat-item" id="${driver.username}" data-role="driver" onclick="initiateChat('${driver.firstName} ${driver.lastName}','${driver.username}','driver')">
-                            <img src="./assets/driver_icon.png" alt="Icon">
-                            <div>
-                                <h3 class="name">${driver.firstName} ${driver.lastName}</h3>
-                                <p class="username">${driver.username}</p>
-                                <span class="new-msg" id="${driver.username}-notify">New Message</span>
-                            </div>
-                        </a>`
-        driverList.innerHTML += template;
-    });
+async function fetchDriver(routeId) {
+    try {
+        const response = await fetch(`/student/assigned-driver?routeId=${encodeURIComponent(routeId)}`);
+        if (response.ok) {
+            const result = await response.json();
+            const driver = result.driver;
+            console.log("Assigned Driver:", driver);
+            renderDriver(driver);
+        } else {
+            console.error('Failed to fetch assigned driver.');
+        }
+    } catch (error) {
+        console.error('Error fetching assigned driver:', error);
+    }
 }
+
+async function fetchStudentRouteId(username) {
+    try {
+        const response = await fetch(`/student/route-id?username=${encodeURIComponent(username)}`);
+        const data = await response.json();
+        console.log("Student's Route ID:", data.routeId);
+        routeId = data.routeId;
+        return
+    } catch (err) {
+        console.error("Failed to get student route ID:", err);
+    }
+}
+
+
+
+function renderDriver(driver) {
+
+    driverList.innerHTML = "";
+
+    if (!driver || !driver.driverId) {
+        driverList.innerHTML = `
+            <div class="chat-item no-driver">
+                <img src="./assets/driver_icon.png" alt="Icon">
+                <div>
+                    <h3 class="name">No Driver Assigned</h3>
+                    <p class="username">---</p>
+                </div>
+            </div>`;
+        return;
+    }
+
+    const template = `
+        <a class="chat-item" id="${driver.username || driver.driverId}" data-role="driver"
+           onclick="initiateChat('${driver.name}', '${driver.username || driver.driverId}', 'driver')">
+            <img src="./assets/driver_icon.png" alt="Icon">
+            <div>
+                <h3 class="name">${driver.name}</h3>
+                <p class="username">${driver.username || driver.driverId}</p>
+                <span class="new-msg" id="${driver.username || driver.driverId}-notify">New Message</span>
+            </div>
+        </a>`;
+
+    driverList.innerHTML = template;
+}
+
 
 function renderAdmins() {
     adminList.innerHTML = "";
