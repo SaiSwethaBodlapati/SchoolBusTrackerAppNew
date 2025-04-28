@@ -1,11 +1,5 @@
 
-const socket = io("http://localhost:8000", {
-    auth: {
-        id: localStorage.getItem('email'),
-        role: "driver"
-    }
-});  
-
+ 
 var adminList, studentList, senderId;
 var admins = [], students = [];
 var recipientId, recipientRole;

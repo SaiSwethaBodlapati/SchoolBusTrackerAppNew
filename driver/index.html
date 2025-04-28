@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Routes</title>
+    <title>Driver Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <style>
@@ -226,7 +226,65 @@
             background-color: #6c757d;
             color: #fff;
         }
+        .stops-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px;
+        }
+        .stop-tile {
+            width: calc(25% - 20px);
+            background-color: #2a2a40;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stop-tile h3 {
+            margin: 10px 0;
+            color: #fff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-radius: 5px;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background: #f5b53f;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        tr:hover {
+            background: rgba(37, 117, 252, 0.1);
+        }
+        .hide{
+            display: none !important;
+        }
+        .attendance-btn.boarded {
+            background-color: green;
+            color: white;
+        }
+
+        .attendance-btn.not-boarded {
+            background-color: red;
+            color: white;
+        }
+
     </style>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="./scripts/auth.js"></script>
 </head>
 <body>
@@ -235,7 +293,7 @@
         <nav>
             <a href="#">Home</a>
             <a href="chats.html">Chats</a>
-            <a href="students.html">Attendance</a>
+            <a href="attendance.html">Attendance</a>
             <a href="#" onclick="logout()">Logout</a>
         </nav>
     </header>
@@ -244,11 +302,39 @@
         <div id="map"></div>
     </section>
     <div class="container">
-        <h1>Manage Routes</h1>
+        <h1>Assigned Route</h1>
         <div class="route-list" id="route-list">
             
         </div>
+        <div style="margin: 10px 0;">
+            <button onclick="submitAllAttendance()" id="submitBtn" style="display: none; padding: 8px 12px; background: green; color: white; border: none; border-radius: 5px;">Submit Attendance</button>
+        </div>
     </div>
+
+    <div class="container">
+        <h1>Route Stops</h1>
+        <div class="stops-container" id="stop-list">
+            
+        </div>
+    </div>
+
+     <div class="container">
+        <h2>Stop Information</h2>
+        <table id="stopInfoTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Attendance</th>
+                    <th>Parent Details</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+     </div>
+    
+    
 
     <div id="view-route-modal" class="modal">
         <div class="modal-content">
@@ -268,200 +354,512 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="./scripts/connection.js"></script>
     <script>
 
 
-        let originMarker = null;
-        let destinationMarker = null;
-        let routeControl = null;
-        let busMarker = null;
-        let routeCoordinates = [];
-        let stopMarkers = [];
-        let stopCoordinates = [];
+    let originMarker = null;
+    let destinationMarker = null;
+    let routeControl = null;
+    let busMarker = null;
+    let routeCoordinates = [];
+    let stopMarkers = [];
+    let stopCoordinates = [];
+    var students = [];
+    var activeRouteId;
 
-        const map = L.map('map').setView([25.5937, 78.9629], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            zoomDelta: 0.25,
-            zoomSnap: 0,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-
-        const greenIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-
-        const redIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-
-        const busIcon = L.icon({
-            iconUrl: './bus.png',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        });
+    const map = L.map('map').setView([25.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        zoomDelta: 0.25,
+        zoomSnap: 0,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
 
 
-        const busStopIcon = L.icon({
-            iconUrl: './assets/bus-stop.png', 
-            iconSize: [25, 25],
-            iconAnchor: [12, 12],
-            popupAnchor: [0, -10]
-        });
-        
-        let routes = [];
-        
-        async function fetchRoutes() {
-            try {
-                const response = await axios.get(`/driver/getRoute/${localStorage.getItem('email')}`);
-                console.log(response)
-                if (response.status === 200 && response.data) {
-                    routes = response.data.route;
-                    console.log(routes)
-                    renderRoutes();
-                }
-            } catch (error) {
-                console.error('Error fetching routes:', error);
-                alert('Failed to fetch routes.');
-            }
+    const greenIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const redIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const busIcon = L.icon({
+        iconUrl: './assets/bus-icon.png',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
+
+
+    const busStopIcon = L.icon({
+        iconUrl: './assets/bus-stop.png', 
+        iconSize: [25, 25],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -10]
+    });
+    
+    var routes = [];
+    var stopIds = [];
+
+    let busIndex = 0;
+    let busTimeout = null;
+    let isPaused = false;
+    let visitedStops = new Set();
+
+    let stopAttendanceRecords = {};
+    const STATUS_BOARDED = 'boarded';
+    const STATUS_NOT_BOARDED = 'not-boarded';
+    const submitBtn = document.getElementById('submitBtn');
+
+    function moveBus() {
+        socket.emit("subscribeToRoute", { routeId: activeRouteId });
+
+        document.querySelectorAll('.action').forEach(btn => btn.classList.remove('hide'));
+
+        if (routeCoordinates.length === 0) {
+            alert('No route found! Please create a route first.');
+            return;
         }
 
-        fetchRoutes();
-
-        function renderRoutes() {
-            const routeList = document.getElementById('route-list');
-            routeList.innerHTML = ''; 
-
-            routes.forEach(route => {
-                const routeCard = document.createElement('div');
-                routeCard.className = 'route-card';
-                routeCard.innerHTML = `
-                    <div class="route-info">
-                        <h3>Route ID: ${route.routeId}</h3>
-                        <p>From: ${route.origin.address} → To: ${route.destination.address}</p>
-                        <p>Bus: ${route.bus.regNumber} | Driver: ${route.driver.name}</p>
-                    </div>
-                    <div class="route-actions">
-                        <button class="view" onclick="viewRoute('${route.routeId}')">View</button>
-                        <button class="edit" onclick="editRoute('${route.routeId}')">Edit</button>
-                        <button class="delete" onclick="deleteRoute('${route.routeId}')">Delete</button>
-                    </div>
-                `;
-                routeList.appendChild(routeCard);
+        function isCloseToWaypoint(currentCoord, waypoints, toleranceRadius) {
+            return waypoints.some(waypoint => {
+                const distance = calculateDistance(currentCoord, waypoint);
+                return distance <= toleranceRadius;
             });
         }
 
+        function isBusStopAtWaypoint(currentCoord, stopCoordinates, toleranceRadius) {
+            return stopCoordinates.some(stop => {
+                const distance = calculateDistance(currentCoord, stop.latLng);
+                return distance <= toleranceRadius;
+            });
+        }
 
-        function viewRoute(routeId) {
-            const route = routes.find(r => r.routeId === routeId);
-            if (route) {
-                const routeDetails = document.getElementById('route-details');
-                routeDetails.innerHTML = `
-                    <p><strong>Route ID:</strong> ${route.routeId}</p>
-                    <p><strong>Origin:</strong> ${route.origin.address}</p>
-                    <p><strong>Destination:</strong> ${route.destination.address}</p>
-                    <p><strong>Bus:</strong> ${route.bus.regNumber}</p>
-                    <p><strong>Driver:</strong> ${route.driver.name}</p>
-                    <p><strong>Pickup Time:</strong> ${route.pickupTime}</p>
-                    <p><strong>Drop Time:</strong> ${route.dropTime}</p>
-                    <p><strong>Stops:</strong></p>
-                    <ul>
-                        ${route.stops.map(stop => `<li>${stop.address}</li>`).join('')}
-                    </ul>
-                `;
-                openModal('view-route-modal');
+        function calculateDistance(coord1, coord2) {
+            const R = 6371e3;
+            const lat1 = coord1.lat * Math.PI / 180;
+            const lat2 = coord2.lat * Math.PI / 180;
+            const deltaLat = (coord2.lat - coord1.lat) * Math.PI / 180;
+            const deltaLng = (coord2.lng - coord1.lng) * Math.PI / 180;
 
-                clearMarkers();
+            const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                    Math.cos(lat1) * Math.cos(lat2) *
+                    Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-                originMarker = L.marker([route.origin.coordinates.lat, route.origin.coordinates.lng], { icon: greenIcon })
-                    .addTo(map)
-                    .bindPopup(`Origin: ${route.origin.address}`)
-                    .openPopup();
+            return R * c;
+        }
 
-                destinationMarker = L.marker([route.destination.coordinates.lat, route.destination.coordinates.lng], { icon: redIcon })
-                    .addTo(map)
-                    .bindPopup(`Destination: ${route.destination.address}`)
-                    .openPopup();
+        let toleranceRadius = 10
 
-                route.stops.forEach(stop => {
-                    const stopMarker = L.marker([stop.coordinates.lat, stop.coordinates.lng], { icon: busStopIcon })
-                        .addTo(map)
-                        .bindPopup(`Stop: ${stop.address}`);
-                    stopMarkers.push(stopMarker);
-                    stopCoordinates.push(L.latLng(stop.coordinates.lat, stop.coordinates.lng));
+        window.animateBus = function () {
+            if (isPaused) return;
+
+            if (busIndex < routeCoordinates.length) {
+                const currentCoord = routeCoordinates[busIndex];
+
+                busMarker.setLatLng(currentCoord);
+                map.setView(currentCoord, map.getZoom());
+
+                socket.emit('busLocationUpdate', {
+                    routeId: activeRouteId,
+                    lat: currentCoord.lat,
+                    lng: currentCoord.lng
                 });
 
-                createRouteWithWaypoints(route);
+                const waypoints = routeCoordinates.map(coord => L.latLng(coord.lat, coord.lng));
+                const isCloseToWaypointt = isCloseToWaypoint(currentCoord, waypoints, toleranceRadius);
+
+                if (isCloseToWaypointt) {
+
+                    const isBusStop = isBusStopAtWaypoint(currentCoord, stopCoordinates, toleranceRadius);
+
+                    if (isBusStop) {
+                        const stopObj = stopCoordinates.find(stop => {
+                            const distance = calculateDistance(currentCoord, stop.latLng);
+                            return distance <= toleranceRadius;
+                        });
+
+                        const stopId = stopObj ? stopObj.stopId : null;
+
+                        if (stopId && !visitedStops.has(stopId)) {
+                            visitedStops.add(stopId);
+
+                            displayStopInfo(stopId, activeRouteId);
+
+                            console.log(`Bus stopping at: ${currentCoord.lat}, ${currentCoord.lng} (Stop ID: ${stopId})`);
+
+                            const currentStopIndex = stopCoordinates.findIndex(stop => stop.stopId === stopId);
+
+                            const nextStopId = (currentStopIndex >= 0 && currentStopIndex + 1 < stopCoordinates.length)
+                                ? stopCoordinates[currentStopIndex + 1].stopId
+                                : null;
+
+                            socket.emit('busStopUpdate', {
+                                routeId: activeRouteId,
+                                lat: currentCoord.lat,
+                                lng: currentCoord.lng,
+                                stopId: stopId,
+                                nextStopId: nextStopId
+                            });
+
+                            busTimeout = setTimeout(() => {
+                                busIndex++;
+                                animateBus();
+                            }, 10000);
+                        } else {
+                            busIndex++;
+                            busTimeout = setTimeout(animateBus, 2000);
+                        }
+                    } else {
+                        busIndex++;
+                        busTimeout = setTimeout(animateBus, 2000);
+                    }
+                } else {
+                    busIndex++;
+                    busTimeout = setTimeout(animateBus, 2000);
+                }
+            } else {
+                submitBtn.style.display='block'
+                socket.emit('destinationUpdate', { routeId: activeRouteId });
+                alert('Bus has reached its destination!');
             }
         }
 
-        function clearMarkers() {
-            if (originMarker) {
-                map.removeLayer(originMarker);
-                originMarker = null;
-            }
-            if (destinationMarker) {
-                map.removeLayer(destinationMarker);
-                destinationMarker = null;
-            }
-            if (routeControl) {
-                map.removeControl(routeControl);
-                routeControl = null;
-            }
-            if (busMarker) {
-                map.removeLayer(busMarker);
-                busMarker = null;
-            }
+        isPaused = false;
+        animateBus();
+    }
 
-            stopMarkers.forEach(marker => map.removeLayer(marker));
-            stopMarkers = [];
-            stopCoordinates = [];
-            routeCoordinates = [];
+    function pauseBus() {
+        isPaused = true;
+        clearTimeout(busTimeout);
+        console.log("Bus movement paused.");
+    }
+
+    function resumeBus() {
+        if (!isPaused) return;
+        isPaused = false;
+        console.log("Resuming bus movement...");
+        animateBus();
+    }
+
+
+        
+    async function fetchRoutes() {
+        try {
+            const response = await axios.get(`/driver/getRoute/${localStorage.getItem('email')}`);
+            console.log(response)
+            if (response.status === 200 && response.data) {
+                routes = response.data.route;
+                console.log(routes)
+                renderRoutes();
+            }
+        } catch (error) {
+            console.error('Error fetching routes:', error);
+            alert('Failed to fetch routes.');
+        }
+    }
+
+    async function fetchStudents() {
+        try {
+            const response = await fetch('/admin/students');
+            if (response.ok) {
+                let result = await response.json();
+                students = result.students;
+            // console.log(students)
+            // renderStudents();
+            } else {
+                console.error('Failed to fetch students.');
+            }
+        } catch (error) {
+            console.error('Error fetching students:', error);
+        }
+    }
+
+    
+
+    function renderRoutes() {
+        const routeList = document.getElementById('route-list');
+        routeList.innerHTML = ''; 
+
+        routes.forEach(route => {
+            activeRouteId = route.routeId;
+            const routeCard = document.createElement('div');
+            routeCard.className = 'route-card';
+            routeCard.innerHTML = `
+                <div class="route-info">
+                    <h3>Route ID: ${route.routeId}</h3>
+                    <p>From: ${route.origin.address} → To: ${route.destination.address}</p>
+                    <p>Bus: ${route.bus.regNumber} | Driver: ${route.driver.name}</p>
+                </div>
+                <div class="route-actions">
+                    <button class="view" onclick="viewRoute('${route.routeId}')">View</button>
+                    <button class="view" onclick="moveBus()">Start</button>
+                    <button class="action hide" onclick="pauseBus()">Pause</button>
+                    <button class="action hide" onclick="resumeBus()">Resume</button>
+                </div>
+            `;
+            routeList.appendChild(routeCard);
+        });
+    }
+
+
+    function viewRoute(routeId) {
+    
+        const route = routes.find(r => r.routeId === routeId);
+        const stopsContainer = document.getElementById("stop-list");
+        if (route) {
+            const routeDetails = document.getElementById('route-details');
+            routeDetails.innerHTML = `
+                <p><strong>Route ID:</strong> ${route.routeId}</p>
+                <p><strong>Origin:</strong> ${route.origin.address}</p>
+                <p><strong>Destination:</strong> ${route.destination.address}</p>
+                <p><strong>Bus:</strong> ${route.bus.regNumber}</p>
+                <p><strong>Driver:</strong> ${route.driver.name}</p>
+                <p><strong>Pickup Time:</strong> ${route.pickupTime}</p>
+                <p><strong>Drop Time:</strong> ${route.dropTime}</p>
+                <p><strong>Stops:</strong></p>
+                <ul>
+                    ${route.stops.map(stop => `<li>${stop.address}</li>`).join('')}
+                </ul>
+            `;
+            openModal('view-route-modal');
+
+            clearMarkers();
+
+            originMarker = L.marker([route.origin.coordinates.lat, route.origin.coordinates.lng], { icon: greenIcon })
+                .addTo(map)
+                .bindPopup(`Origin: ${route.origin.address}`)
+                .openPopup();
+
+            destinationMarker = L.marker([route.destination.coordinates.lat, route.destination.coordinates.lng], { icon: redIcon })
+                .addTo(map)
+                .bindPopup(`Destination: ${route.destination.address}`)
+                .openPopup();
+
+            route.stops.forEach(stop => {
+                stopIds.push(stop.stopId);
+                const stopMarker = L.marker([stop.coordinates.lat, stop.coordinates.lng], { icon: busStopIcon })
+                    .addTo(map)
+                    .bindPopup(`Stop: ${stop.stopId}`);
+                stopMarkers.push(stopMarker);
+                stopCoordinates.push({
+                    latLng: L.latLng(stop.coordinates.lat, stop.coordinates.lng),
+                    stopId: stop.stopId
+                });
+
+
+                const stopTile = document.createElement("div");
+                stopTile.className = "stop-tile";
+                stopTile.innerHTML = `<h3>${stop.stopId}</h3>`;
+
+                stopTile.addEventListener("click", () => displayStopInfo(stop.stopId, routeId));
+                
+                stopsContainer.appendChild(stopTile);
+            });
+
+            createRouteWithWaypoints(route);
+
+            console.log(stopCoordinates)
+        }
+    }
+
+    function clearMarkers() {
+        if (originMarker) {
+            map.removeLayer(originMarker);
+            originMarker = null;
+        }
+        if (destinationMarker) {
+            map.removeLayer(destinationMarker);
+            destinationMarker = null;
+        }
+        if (routeControl) {
+            map.removeControl(routeControl);
+            routeControl = null;
+        }
+        if (busMarker) {
+            map.removeLayer(busMarker);
+            busMarker = null;
         }
 
-        function createRouteWithWaypoints(route) {
-            if (routeControl) {
-                map.removeControl(routeControl);
+        stopMarkers.forEach(marker => map.removeLayer(marker));
+        stopMarkers = [];
+        stopCoordinates = [];
+        routeCoordinates = [];
+    }
+
+    function createRouteWithWaypoints(route) {
+        if (routeControl) {
+            map.removeControl(routeControl);
+        }
+
+        const waypoints = [
+            L.latLng(route.origin.coordinates.lat, route.origin.coordinates.lng),
+            ...route.stops.map(stop => L.latLng(stop.coordinates.lat, stop.coordinates.lng)),
+            L.latLng(route.destination.coordinates.lat, route.destination.coordinates.lng)
+        ];
+
+        routeControl = L.Routing.control({
+            waypoints: waypoints,
+            routeWhileDragging: false,
+            showAlternatives: false,
+        }).addTo(map);
+
+        map.fitBounds(L.latLngBounds(waypoints));
+
+        routeControl.on('routesfound', function (e) {
+            const routes = e.routes;
+            routeCoordinates = routes[0].coordinates;
+            alert('Route Initiated!');
+            console.log("Route : ", routeCoordinates);
+
+            if (!busMarker) {
+                busMarker = L.marker(routeCoordinates[0], { icon: busIcon }).addTo(map);
+            }
+        });
+    }
+
+    function displayStopInfo(stopId, routeId) {
+        const tbody = document.querySelector("#stopInfoTable tbody");
+        tbody.innerHTML = "";
+
+        const filteredStudents = students.filter(student =>
+            student.routeId === routeId && student.busStop === stopId
+        );
+
+        if (filteredStudents.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td colspan="5" class="text-center">No students assigned to this stop</td>
+            `;
+            tbody.appendChild(row);
+            return;
+        }
+
+        if (!stopAttendanceRecords[stopId]) {
+            stopAttendanceRecords[stopId] = [];
+        }
+
+        filteredStudents.forEach(student => {
+ 
+            const attendanceStatus = student.attendance ? STATUS_BOARDED : STATUS_NOT_BOARDED;
+
+            const exists = stopAttendanceRecords[stopId].some(s => s.studentId === student.studentId);
+            if (!exists) {
+                stopAttendanceRecords[stopId].push({
+                    studentId: student.studentId,
+                    busStop: stopId,
+                    status: attendanceStatus
+                });
             }
 
-            const waypoints = [
-                L.latLng(route.origin.coordinates.lat, route.origin.coordinates.lng),
-                ...route.stops.map(stop => L.latLng(stop.coordinates.lat, stop.coordinates.lng)),
-                L.latLng(route.destination.coordinates.lat, route.destination.coordinates.lng)
-            ];
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${student.studentId}</td>
+                <td>${student.firstName} ${student.lastName}</td>
+                <td>${student.class}</td>
+                <td>
+                    <button 
+                        class="attendance-btn ${attendanceStatus}" 
+                        data-status="${attendanceStatus}" 
+                        onclick="toggleAttendance(this, '${student.studentId}', '${stopId}')"
+                    >
+                        ${attendanceStatus === STATUS_BOARDED ? 'Boarded' : 'Not Boarded'}
+                    </button>
+                </td>
+                <td>${student.fatherName} - ${student.fatherPhone}</td>
+            `;
 
-            routeControl = L.Routing.control({
-                waypoints: waypoints,
-                routeWhileDragging: false,
-                showAlternatives: false,
-            }).addTo(map);
+            tbody.appendChild(row);
+        });
+    }
 
-            map.fitBounds(L.latLngBounds(waypoints));
+    function toggleAttendance(btn, studentId, stopId) {
+        const currentStatus = btn.getAttribute('data-status');
+        const newStatus = currentStatus === STATUS_BOARDED ? STATUS_NOT_BOARDED : STATUS_BOARDED;
+
+        btn.setAttribute('data-status', newStatus);
+        btn.classList.remove(currentStatus);
+        btn.classList.add(newStatus);
+        btn.innerText = newStatus === STATUS_BOARDED ? 'Boarded' : 'Not Boarded';
+
+        const index = stopAttendanceRecords[stopId].findIndex(s => s.studentId === studentId);
+        if (index > -1) {
+            stopAttendanceRecords[stopId][index].status = newStatus;
+        } else {
+            stopAttendanceRecords[stopId].push({
+                studentId,
+                busStop: stopId,
+                status: newStatus
+            });
+        }
+    }
+
+    async function submitAllAttendance() {
+        const allRecords = [];
+
+        const now = new Date();
+        const date = now.toISOString().split('T')[0];
+        const time = now.toTimeString().split(' ')[0].slice(0, 5);
+
+        const busId = routes.find(r => r.routeId === activeRouteId)?.bus?.regNumber;
+
+        Object.keys(stopAttendanceRecords).forEach(stopId => {
+            stopAttendanceRecords[stopId].forEach(record => {
+                allRecords.push({
+                    routeId: activeRouteId,
+                    busId,
+                    studentId: record.studentId,
+                    busStop: record.busStop,
+                    status: record.status,
+                    date,
+                    time
+                });
+            });
+        });
+
+        if (allRecords.length === 0) {
+            alert('No attendance data to submit.');
+            return;
         }
 
-
-
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
+        try {
+            const res = await axios.post('/driver/bulk', { records: allRecords });
+            alert('Attendance submitted successfully!');
+            console.log('Submitted:', res.data);
+             submitBtn.style.display='none'
+        } catch (err) {
+            console.error(err);
+            alert('Failed to submit attendance.');
         }
+    }
 
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
 
-        document.addEventListener('DOMContentLoaded', renderRoutes);
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await fetchRoutes();
+        await fetchStudents();
+    });
+
     </script>
 </body>
 </html>
