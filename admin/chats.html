@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>Driver Chat</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
@@ -114,7 +114,7 @@
             gap: 20px;
         }
 
-        .select-driver, .select-student {
+        .select-admin, .select-student {
             padding: 10px 20px;
             background: transparent;
             color: #fff;
@@ -126,7 +126,7 @@
             position: relative;
         }
 
-        .select-driver:hover, .select-student:hover {
+        .select-admin:hover, .select-student:hover {
             transform: scale(1.05);
             color: #f1c40f;
         }
@@ -257,13 +257,11 @@
 </head>
 <body>
     <header>
-        <div class="title"><h2>Admin - School Bus Tracker <span>🚌</span></h2></div>
+        <div class="title"><h2>Driver - School Bus Tracker <span>🚌</span></h2></div>
         <nav>
             <a href="index.html">Home</a>
-            <a href="routes.html">Routes</a>
-            <a href="drivers.html">Drivers</a>
             <a href="#">Chats</a>
-            <a href="students.html">Students</a>
+            <a href="attendance.html">Attendance</a>
             <a href="#" onclick="logout()">Logout</a>
         </nav>
     </header>
@@ -272,11 +270,11 @@
             <div class="chatlist">
                 <div class="chat-header">Chats</div>
                 <div class="chat-selection">
-                    <button class="select-driver active-select" onclick="displayDriver()">Driver</button>
+                    <button class="select-admin active-select" onclick="displayAdmin()">Admins</button>
                     <button class="select-student" onclick="displayStudent()">Students</button>
                 </div>
                 <div class="chat-lists" id="chatList">
-                    <div id="driverList">
+                    <div id="adminList">
                         <a class="chat-item">
                             <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
                             <div>
@@ -384,6 +382,7 @@
             </div>
         </div>
     </div>
+    <script src="./scripts/connection.js"></script>
     <script src="./scripts/chat.js"></script>
 </body>
 </html>

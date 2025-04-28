@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Driver - Attendance</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700,300"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #1e1e2f;
+      color: #f0f0f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #2a2a40;
+      padding: 15px 20px;
+      display: flex;
+      color: #fff;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    header h2 {
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    nav {
+      display: flex;
+      gap: 20px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #fff;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      background-color: #2e2e42;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    h2 {
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    input[type="date"] {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+      margin-right: 10px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+      color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #e0e0e0;
+    }
+
+    td:nth-child(4) {
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+
+    .boarded {
+      color: #28a745;
+    }
+
+    .not-boarded {
+      color: #dc3545;
+    }
+
+    .text-center {
+      text-align: center;
+      font-style: italic;
+      color: #999;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="./scripts/auth.js"></script>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <h2>Driver Attendance - School Bus Tracker <span>🚌</span></h2>
+    </div>
+    <nav>
+            <a href="index.html">Home</a>
+            <a href="chats.html">Chats</a>
+            <a href="#">Attendance</a>
+            <a href="#" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Attendance Viewer</h2>
+    <div style="margin-bottom: 10px;">
+      <label for="attendanceDate">Select Date:</label>
+      <input type="date" id="attendanceDate" />
+      <button onclick="fetchAttendanceByDate()">Fetch Attendance</button>
+    </div>
+
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Stop</th>
+          <th>Status</th>
+          <th>Time</th>
+          <th>Route ID</th>
+          <th>Bus ID</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    let students = [];
+
+    async function fetchStudents() {
+        try {
+            const response = await fetch('/admin/students');
+            if (response.ok) {
+                let result = await response.json();
+                students = result.students;
+                console.log(students)
+            } else {
+                console.error('Failed to fetch students.');
+            }
+        } catch (error) {
+            console.error('Error fetching students:', error);
+        }
+    }
+
+    async function fetchAttendanceByDate() {
+      const date = document.getElementById("attendanceDate").value;
+      if (!date) {
+        alert("Please select a date");
+        return;
+      }
+
+      try {
+        const res = await axios.get(`/driver/attendance/date?date=${date}`);
+        const tableBody = document.querySelector("#attendanceTable tbody");
+        tableBody.innerHTML = "";
+
+        if (!res.data || res.data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="7" class="text-center">No attendance found for ${date}</td></tr>`;
+          return;
+        }
+
+        res.data.forEach((recordGroup) => {
+          recordGroup.records.forEach((student) => {
+           // console.log(student)
+            const studentDetails = students.find(s => s.studentId === student.studentId);
+            const name = studentDetails ? `${studentDetails.firstName} ${studentDetails.lastName}` : "Unknown";
+            const className = studentDetails ? studentDetails.class : "Unknown";
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${student.studentId}</td>
+              <td>${name}</td>
+              <td>${className}</td>
+              <td>${student.busStop}</td>
+              <td class="${student.status === 'boarded' ? 'boarded' : 'not-boarded'}">${student.status}</td>
+              <td>${student.time}</td>
+              <td>${recordGroup.routeId}</td>
+              <td>${recordGroup.busId}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch attendance");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => { 
+        await fetchStudents();
+    })
+
+  </script>
+</body>
+</html>
