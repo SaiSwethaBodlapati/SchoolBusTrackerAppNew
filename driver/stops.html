@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Routes and Stops</title>
+    <style>
+        /* Styling for the stop tiles */
+        .stops-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px;
+        }
+        .stop-tile {
+            width: calc(25% - 20px); /* Four items per row */
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stop-tile h3 {
+            margin: 10px 0;
+        }
+
+        /* Styling for the student info table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Assigned Routes</h1>
+
+    <!-- Stops Section -->
+    <div class="stops-container" id="stopsContainer"></div>
+
+    <!-- Stop Info Table -->
+    <h2>Stop Information</h2>
+    <table id="stopInfoTable">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Attendance</th>
+                <th>Parent Contact Number</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+
+        const stops = [
+            { id: 1, name: "Stop A" },
+            { id: 2, name: "Stop B" },
+            { id: 3, name: "Stop C" },
+            { id: 4, name: "Stop D" },
+            { id: 5, name: "Stop E" }
+        ];
+
+        const students = [
+            { studentId: "S001", name: "John Doe", class: "5A", attendance: true, parentContact: "1234567890" },
+            { studentId: "S002", name: "Jane Smith", class: "5A", attendance: false, parentContact: "0987654321" },
+            { studentId: "S003", name: "Alice Brown", class: "6B", attendance: true, parentContact: "1112223334" },
+        ];
+
+        const stopsContainer = document.getElementById("stopsContainer");
+        stops.forEach(stop => {
+            const stopTile = document.createElement("div");
+            stopTile.className = "stop-tile";
+            stopTile.innerHTML = `<h3>${stop.name}</h3>`;
+            
+
+            stopTile.addEventListener("click", () => displayStopInfo(stop.id));
+            
+            stopsContainer.appendChild(stopTile);
+        });
+
+        function displayStopInfo(stopId) {
+            const tbody = document.querySelector("#stopInfoTable tbody");
+            
+            tbody.innerHTML = "";
+
+            students.forEach(student => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${student.studentId}</td>
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td><button>${student.attendance ? 'Boarded' : 'Not Boarded'}</button></td>
+                    <td>${student.parentContact}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Routes</title>
+    <title>Admin Manage Routes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <style>
@@ -228,6 +228,7 @@
         }
     </style>
     <script src="./scripts/auth.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <header>
@@ -238,6 +239,7 @@
             <a href="drivers.html">Drivers</a>
             <a href="chats.html">Chats</a>
             <a href="students.html">Students</a>
+            <a href="attendance.html">Attendance</a>
             <a href="#" onclick="logout()">Logout</a>
         </nav>
     </header>
@@ -245,6 +247,7 @@
     <section id="map-section">
         <div id="map"></div>
     </section>
+   
     <div class="container">
         <h1>Manage Routes</h1>
         <div class="route-list" id="route-list">
@@ -264,12 +267,36 @@
             <div class="modal-footer">
                 <button class="confirm" onclick="closeModal('view-route-modal')">Close</button>
             </div>
+            
         </div>
     </div>
+
+    <section id="edit-controls" style="display:none; margin: 20px;">
+        <div class="container">
+          <h2>Edit Route Info</h2>
+          <label for="bus-reg-number">Bus Reg Number:</label>
+          <input type="text" id="bus-reg-number" placeholder="Enter bus registration number" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+      
+          <label for="pickup-time">Pickup Time:</label>
+          <input type="time" id="pickup-time" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+      
+          <label for="drop-time">Drop Time:</label>
+          <input type="time" id="drop-time" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+      
+          <h3>Bus Stops</h3>
+          <ul id="bus-stops-list" style="list-style: none; padding: 0;"></ul>
+      
+          <button id="save-edited-route" class="action-btn" onclick="saveEditedRoute()">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </section>
+
 </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="./scripts/connection.js"></script>
     <script>
 
 
@@ -280,6 +307,8 @@
         let routeCoordinates = [];
         let stopMarkers = [];
         let stopCoordinates = [];
+        let isEditingRoute = false;
+
 
         const map = L.map('map').setView([25.5937, 78.9629], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -363,6 +392,18 @@
             });
         }
 
+        async function reverseGeocode(lat, lng) {
+            try {
+                const response = await axios.get(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+                );
+                const address = response.data.display_name;
+                return address;
+            } catch (error) {
+                console.error("Error fetching address:", error);
+                return null;
+            }
+        }
 
         function viewRoute(routeId) {
             const route = routes.find(r => r.routeId === routeId);
@@ -404,8 +445,31 @@
                 });
 
                 createRouteWithWaypoints(route);
+
+                if (typeof socket !== "undefined") {
+                    socket.emit("subscribeToRoute", { routeId });
+
+                    socket.on("busLocation", (update) => {
+                        updateBusMarker(update);
+                    });
+
+                    socket.on("busStopLocation", (stopUpdate) => {
+                        console.log("New stop update:", stopUpdate);
+                    });
+                }
+
             }
         }
+
+        function updateBusMarker({ lat, lng }) {
+            const latLng = L.latLng(lat, lng);
+            if (busMarker) {
+                busMarker.setLatLng(latLng);
+            } else {
+                busMarker = L.marker(latLng, { icon: busIcon }).addTo(map).bindPopup("🚌 Live Bus Location");
+            }
+        }
+
 
         function clearMarkers() {
             if (originMarker) {
@@ -463,17 +527,188 @@
             document.getElementById(modalId).style.display = 'none';
         }
 
-  
-        function editRoute(routeId) {
-            alert(`Edit route with ID: ${routeId}`);
+        function showEditControls(routeId) {
+            document.getElementById('edit-controls').style.display = 'block';
+            document.getElementById('save-edited-route').dataset.routeId = routeId;
+
+            const route = routes.find(r => r.routeId === routeId);
+            document.getElementById('bus-reg-number').value = route.bus?.regNumber || '';
+            document.getElementById('pickup-time').value = route.pickupTime ? convertTo24HourFormat(route.pickupTime) : '';
+            document.getElementById('drop-time').value = route.dropTime ? convertTo24HourFormat(route.dropTime) : '';
+            updateBusStopsList();
         }
+
+        function convertTo24HourFormat(timeStr) {
+            const [time, modifier] = timeStr.split(" ");
+            let [hours, minutes] = time.split(":");
+
+            if (modifier === "PM" && hours !== "12") {
+                hours = String(parseInt(hours) + 12);
+            }
+            if (modifier === "AM" && hours === "12") {
+                hours = "00";
+            }
+
+            return `${hours.padStart(2, '0')}:${minutes}`;
+        }
+
+
+        async function updateBusStopsList() {
+            const busStopsList = document.getElementById('bus-stops-list');
+            busStopsList.innerHTML = '';
+            for (let [index, stop] of stopCoordinates.entries()) {
+                let address = await reverseGeocode(stop.lat, stop.lng);
+                const li = document.createElement('li');
+                li.style.backgroundColor = '#eee';
+                li.style.marginBottom = '5px';
+                li.style.padding = '8px';
+                li.style.borderRadius = '8px';
+                li.innerHTML = `
+                <span>Stop ${index + 1}: ${address}</span>
+                <button onclick="removeBusStop(L.latLng(${stop.lat}, ${stop.lng}))" style="margin-left: 10px; background-color: red; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Remove</button>
+                `;
+                busStopsList.appendChild(li);
+            }
+        }
+
+        function removeBusStop(stop) {
+            const markerIndex = stopMarkers.findIndex(marker => marker.getLatLng().equals(stop));
+            if (markerIndex !== -1) {
+                map.removeLayer(stopMarkers[markerIndex]);
+                stopMarkers.splice(markerIndex, 1);
+            }
+            const coordIndex = stopCoordinates.findIndex(coord => coord.equals(stop));
+            if (coordIndex !== -1) {
+                stopCoordinates.splice(coordIndex, 1);
+            }
+            updateBusStopsList();
+        }
+
+  
+        async function editRoute(routeId) {
+            const route = routes.find(r => r.routeId === routeId);
+            if (!route) return alert("Route not found!");
+
+            clearMarkers();
+
+            originMarker = L.marker([route.origin.coordinates.lat, route.origin.coordinates.lng], { icon: greenIcon })
+                .addTo(map)
+                .bindPopup('Origin')
+                .openPopup();
+
+            destinationMarker = L.marker([route.destination.coordinates.lat, route.destination.coordinates.lng], { icon: redIcon })
+                .addTo(map)
+                .bindPopup('Destination')
+                .openPopup();
+
+            for (const stop of route.stops) {
+                const stopLatLng = L.latLng(stop.coordinates.lat, stop.coordinates.lng);
+                const marker = L.marker(stopLatLng, { icon: busStopIcon })
+                    .addTo(map)
+                    .bindPopup(`Stop: ${stop.address}`);
+                stopMarkers.push(marker);
+                stopCoordinates.push(stopLatLng);
+            }
+
+            map.setView([route.origin.coordinates.lat, route.origin.coordinates.lng], 13);
+            createRouteWithWaypoints(route);
+            isEditingRoute = true;
+            showEditControls(routeId);
+        }
+
+        map.on('click', async (e) => {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            if (!originMarker || !destinationMarker) return;
+
+            if (isEditingRoute) {
+                const stopMarker = L.marker([lat, lng], { icon: busStopIcon }).addTo(map)
+                    .bindPopup(`Stop ${stopMarkers.length + 1}`).openPopup();
+
+                stopMarkers.push(stopMarker);
+                stopCoordinates.push(L.latLng(lat, lng));
+
+                const stopAddress = await reverseGeocode(lat, lng);
+                if (stopAddress) {
+                    console.log("Stop Address:", stopAddress);
+                    alert(`Stop ${stopMarkers.length} added at: ${stopAddress}`);
+                } else {
+                    alert("Could not fetch stop address.");
+                }
+
+                updateBusStopsList();
+            }
+        });
+
+
+        async function saveEditedRoute() {
+            isEditingRoute = false;
+            const routeId = document.getElementById('save-edited-route').dataset.routeId;
+            const origin = originMarker.getLatLng();
+            const destination = destinationMarker.getLatLng();
+
+            const stops = await Promise.all(stopCoordinates.map(async (stop, index) => ({
+                stopId: `S${index + 1}`,
+                coordinates: { lat: stop.lat, lng: stop.lng },
+                address: await reverseGeocode(stop.lat, stop.lng),
+                sequence: index + 1
+            })));
+
+            const routeData = {
+                origin: {
+                coordinates: { lat: origin.lat, lng: origin.lng },
+                address: await reverseGeocode(origin.lat, origin.lng)
+                },
+                destination: {
+                coordinates: { lat: destination.lat, lng: destination.lng },
+                address: await reverseGeocode(destination.lat, destination.lng)
+                },
+                stops: stops,
+                bus: {
+                regNumber: document.getElementById('bus-reg-number').value.trim() || 'UNKNOWN'
+                },
+                pickupTime: document.getElementById('pickup-time').value,
+                dropTime: document.getElementById('drop-time').value
+            };
+
+            try {
+                const response = await axios.put(`/admin/routes/${routeId}`, routeData);
+                if (response.status === 200) {
+                alert('Route updated successfully!');
+                window.location.reload();
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Failed to update route.');
+            }
+            
+            }
+
 
 
         function deleteRoute(routeId) {
             if (confirm(`Are you sure you want to delete route ${routeId}?`)) {
-                alert(`Route ${routeId} deleted.`);
+               
+                fetch(`/admin/routes/${routeId}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Route deleted successfully.') {
+                        alert(`Route ${routeId} deleted.`);
+                        window.location.reload(true);
+                    } else {
+                        alert('Failed to delete route.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting route:', error);
+                    alert('Failed to delete route.');
+                });
             }
         }
+
 
 
         document.addEventListener('DOMContentLoaded', renderRoutes);

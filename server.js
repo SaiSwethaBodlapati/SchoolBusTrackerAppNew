@@ -25,6 +25,7 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {};
+const routeSubscribers = {};
 
 // Middleware
 app.use(bodyParser.json());
@@ -112,6 +113,54 @@ io.on("connection", (socket) => {
             console.log(`No users connected with Role: ${targetRole}`);
         }
     });
+
+    socket.on("subscribeToRoute", ({ routeId }) => {
+        if (!routeSubscribers[routeId]) {
+            routeSubscribers[routeId] = new Set();
+        }
+        routeSubscribers[routeId].add(socket.id);
+        console.log(`Socket ${socket.id} subscribed to route ${routeId}`);
+    });
+    
+    socket.on("unsubscribeFromRoute", ({ routeId }) => {
+        if (routeSubscribers[routeId]) {
+            routeSubscribers[routeId].delete(socket.id);
+            console.log(`Socket ${socket.id} unsubscribed from route ${routeId}`);
+        }
+    });
+    
+    socket.on("busLocationUpdate", ({ routeId, lat, lng }) => {
+        const update = { lat, lng, timestamp: new Date() };
+       // console.log(`Bus location update for Route ${routeId}:`, update);
+    
+        if (routeSubscribers[routeId]) {
+            for (const socketId of routeSubscribers[routeId]) {
+                io.to(socketId).emit("busLocation", update);
+            }
+        }
+    });
+
+    socket.on("busStopUpdate", ({ routeId, lat, lng, stopId, nextStopId }) => {
+        const update = { lat, lng, stopId, nextStopId, timestamp: new Date() };
+        console.log(`Bus stop update for Route ${routeId}:`, update);
+    
+        if (routeSubscribers[routeId]) {
+            for (const socketId of routeSubscribers[routeId]) {
+                io.to(socketId).emit("busStopLocation", update);
+            }
+        }
+    });
+
+    socket.on("destinationUpdate", ({ routeId }) => {
+        const update = { timestamp: new Date() };
+        if (routeSubscribers[routeId]) {
+            for (const socketId of routeSubscribers[routeId]) {
+                io.to(socketId).emit("reachedDestination", update);
+            }
+        }
+    })
+    
+
 });
 
 connect().then(() => {

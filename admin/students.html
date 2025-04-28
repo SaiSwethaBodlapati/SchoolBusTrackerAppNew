@@ -223,14 +223,14 @@
             text-decoration: underline;
         }
 
-        .route-options {
+        .route-options, .stops-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
 
-        .route-options label {
+        .route-options label, .stops-container label {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -243,16 +243,16 @@
             transition: background-color 0.3s ease;
         }
 
-        .route-options label:hover {
+        .route-options label:hover, .stops-container label:hover {
             background-color: #c9c9c9;
         }
 
-        .route-options input[type="radio"] {
+        .route-options input[type="radio"], .stops-container input[type="radio"] {
             display: block;
             margin-right: 10px;
         }
 
-        .route-options input[type="radio"]:checked + span {
+        .route-options input[type="radio"]:checked + span, .stops-container input[type="radio"]:checked + span {
             font-weight: bold;
             color: #007bff;
         }
@@ -285,8 +285,24 @@
             background-color: #dc3545;
             color: #fff;
         }
+        .removeDriver{
+            cursor: pointer;
+        }
+        .unassign-bus-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
 
-
+        .unassign-bus-btn:hover {
+            background-color: #c82333;
+        }
 
     </style>
     <link rel="stylesheet" href="./css/chat.css">
@@ -306,6 +322,7 @@
             <a href="drivers.html">Drivers</a>
             <a href="chats.html">Chats</a>
             <a href="#">Students</a>
+            <a href="attendance.html">Attendance</a>
             <a href="#" onclick="logout()">Logout</a>
         </nav>
     </header>
@@ -358,16 +375,23 @@
             let input = document.getElementById('searchInput').value.toLowerCase();
             let table = document.getElementById('studentsTable');
             let rows = table.getElementsByTagName('tr');
-            
+
             for (let i = 1; i < rows.length; i++) {
-                let firstName = rows[i].getElementsByTagName('td')[1];
-                let lastName = rows[i].getElementsByTagName('td')[2];
-                if (firstName && lastName) {
-                    let textValue = firstName.textContent.toLowerCase() + ' ' + lastName.textContent.toLowerCase();
-                    rows[i].style.display = textValue.includes(input) ? '' : 'none';
-                }
+                const cells = rows[i].getElementsByTagName('td');
+
+                const firstName = cells[1]?.textContent.toLowerCase();
+                const lastName = cells[2]?.textContent.toLowerCase();
+                const username = cells[3]?.textContent.toLowerCase();
+                const studentClass = cells[4]?.textContent.toLowerCase();
+                const address = cells[5]?.textContent.toLowerCase();
+                const busRoute = cells[6]?.textContent.toLowerCase();
+                const driverName = cells[7]?.textContent.toLowerCase();
+
+                const combinedText = `${firstName} ${lastName} ${username} ${studentClass} ${address} ${busRoute} ${driverName}`;
+                rows[i].style.display = combinedText.includes(input) ? '' : 'none';
             }
         }
+
 
         function sortTable(colIndex, isNumeric = false) {
             let table = document.getElementById("studentsTable");
