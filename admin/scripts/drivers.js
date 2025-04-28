@@ -43,9 +43,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         tableBody.innerHTML = '';
         drivers.forEach((driver, index) => {
             const matchedRoute = routes.find(route => route.driver && route.driver.driverId === driver.username);
-            const routeDisplay = matchedRoute 
-                ? `${matchedRoute.routeId} <span class="removeDriver" onclick='removeRouteDriver("${matchedRoute.routeId}")'>❌</span>`
-                : `<button class="assign-route" data-driver-id="${driver.username}" data-driver-name="${driver.firstName} ${driver.lastName}">Assign Route</button>`;
+            const routeDisplay = matchedRoute ? `${matchedRoute.routeId} 
+            <button class="unassign-route-btn" onclick='if(confirm("Unassign this route?")) removeRouteDriver("${matchedRoute.routeId}")'>
+                Unassign
+            </button>`
+            : `<button class="assign-route" data-driver-id="${driver.username}" data-driver-name="${driver.firstName} ${driver.lastName}">Assign Route</button>`;
+
             
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -55,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${driver.username}</td>
                 <td>${routeDisplay}</td>
                 <td class="actions">
-                    <button class="delete" onclick="deleteDriver('${driver.username}')">Delete</button>
+                    <button class="delete" onclick="deleteDriver('${driver._id}')">Delete</button>
                 </td>
             `;
             tableBody.appendChild(row);
