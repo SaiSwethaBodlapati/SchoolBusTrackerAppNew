@@ -110,18 +110,9 @@ const addOrUpdateAttendance = async (req, res) => {
         }
     
         const now = new Date();
-
-        const date = now.toLocaleDateString('en-CA', {
-          timeZone: 'America/Chicago'
-        });
-
-        const time = now.toLocaleTimeString('en-GB', {
-          timeZone: 'America/Chicago',
-          hour:   '2-digit',
-          minute: '2-digit',
-          hour12: false
-        });
-        console.log(date, time)
+        const date = now.toISOString().split('T')[0];
+        const time = now.toTimeString().split(' ')[0].slice(0, 5);
+    
         const filter = { routeId, busId, date };
     
         await RouteAttendance.updateOne(filter, {
@@ -154,25 +145,15 @@ const addOrUpdateAttendance = async (req, res) => {
 const addOrUpdateBulkAttendance = async (req, res) => {
     try {
       const records = req.body.records;
-     // console.log(records)
+      console.log(records)
       if (!records || !Array.isArray(records) || records.length === 0) {
         return res.status(400).json({ message: 'No attendance records provided' });
       }
   
       const now = new Date();
-
-      const date = now.toLocaleDateString('en-CA', {
-        timeZone: 'America/Chicago'
-      });
-
-      const time = now.toLocaleTimeString('en-GB', {
-        timeZone: 'America/Chicago',
-        hour:   '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-
-      console.log(date, time)
+      const date = now.toISOString().split('T')[0];
+      const time = now.toTimeString().split(' ')[0].slice(0, 5);
+  
       for (const record of records) {
         const { routeId, busId, studentId, busStop, status } = record;
   

@@ -97,10 +97,96 @@ const updateProfile = async (req,res) => {
     }
 }
 
+const studentRoute = async (req, res) => {
+    try {
+        const username = req.params.username;
+
+        const student = await studentModel.findOne({ username: username });
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found.' });
+        }
+
+        const routeId = student.routeId;
+
+        if (!routeId) {
+            return res.status(400).json({ message: 'Route ID not assigned to this student.' });
+        }
+
+        const route = await busRouteModel.findOne({ routeId: routeId });
+
+        if (!route) {
+            return res.status(404).json({ message: 'Route not found.' });
+        }
+
+        res.status(200).json({ route });
+    } catch (error) {
+        console.error('Error fetching student route:', error);
+        res.status(500).json({ message: 'Failed to fetch student route.' });
+    }
+};
+
+const getAssignedDriverByRoute = async (req, res) => {
+    const { routeId } = req.query;
+
+    if (!routeId) {
+        return res.status(400).json({ message: "Missing routeId in query" });
+    }
+
+    try {
+        const route = await busRouteModel.findOne({ routeId });
+
+        if (!route) {
+            return res.status(404).json({ message: "Route not found" });
+        }
+
+        if (!route.driver || !route.driver.driverId) {
+            return res.status(404).json({ message: "No driver assigned to this route" });
+        }
+
+        return res.status(200).json({
+            message: "Driver fetched successfully",
+            driver: route.driver
+        });
+    } catch (error) {
+        console.error("Error fetching driver for route:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
+
+
+const getStudentRouteId = async (req, res) => {
+    try {
+        const { username } = req.query;
+
+        if (!username) {
+            return res.status(400).json({ message: "Missing username in query" });
+        }
+
+        const student = await studentModel.findOne({ username }).select("routeId");
+
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        res.status(200).json({ routeId: student.routeId });
+    } catch (error) {
+        console.error("Error fetching student's routeId:", error);
+        res.status(500).json({ message: "Failed to fetch routeId", error: error.message });
+    }
+};
+
+
 
 module.exports = {
     getRoutes,
     routeByDriverId,
     fetchProfie,
-    updateProfile
+    updateProfile,
+    studentRoute,
+    getAssignedDriverByRoute,
+    getStudentRouteId
 }

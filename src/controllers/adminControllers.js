@@ -143,6 +143,28 @@ const addRoute = async (req, res) => {
     }
 };
 
+const updateRoute = async (req, res) => {
+    const { routeId } = req.params;
+    const updatedData = req.body;
+
+    try {
+        const updatedRoute = await busRouteModel.findOneAndUpdate(
+            { routeId: routeId },
+            updatedData,
+            { new: true }
+        );
+
+        if (!updatedRoute) {
+            return res.status(404).json({ message: 'Route not found.' });
+        }
+
+        res.status(200).json({ updatedRoute });
+    } catch (error) {
+        console.error('Error updating route:', error);
+        res.status(500).json({ message: 'Failed to update route.' });
+    }
+};
+
 
 const getRoutes = async (req, res) => {
     try {
@@ -168,27 +190,56 @@ const routeById = async (req, res) => {
     }
 };
 
-const updateStudentRoute = async (req, res) => {
+const deleteRoute = async (req, res) => {
     try {
-      const { studentId } = req.params;
-      const { routeId } = req.body;
-  
-      const updatedStudent = await studentModel.findOneAndUpdate(
-        { studentId: studentId },
-        { routeId: routeId },
-        { new: true }
-      );
-  
-      if (!updatedStudent) {
-        return res.status(404).json({ message: 'Student not found' });
-      }
-  
-      res.status(200).json({ message: 'Route assigned successfully', student: updatedStudent });
+        const { routeId } = req.params;
+
+        const deletedRoute = await busRouteModel.findOneAndDelete({ routeId: routeId });
+
+        if (!deletedRoute) {
+            return res.status(404).send({ message: 'Route not found.' });
+        }
+
+        res.status(200).send({ message: 'Route deleted successfully.', route: deletedRoute });
     } catch (error) {
-      console.error('Error assigning route:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error deleting route:', error);
+        res.status(500).json({ message: 'Failed to delete route.' });
     }
 };
+
+
+const updateStudentRoute = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const { routeId, stopId } = req.body;
+        
+        if (!routeId || !stopId) {
+            return res.status(400).json({ message: 'Both routeId and stopId are required' });
+        }
+
+        const updatedStudent = await studentModel.findOneAndUpdate(
+            { studentId: studentId },
+            { 
+                routeId: routeId,
+                busStop: stopId 
+            },
+            { new: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({ 
+            message: 'Route and stop assigned successfully', 
+            student: updatedStudent 
+        });
+    } catch (error) {
+        console.error('Error assigning route and stop:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
   
 const updateDriverRoute = async (req, res) => {
     try {
@@ -260,6 +311,35 @@ const deleteDriverRoute = async (req, res) => {
     }
 };
 
+const deleteRouteStudent = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        
+        const updatedStudent = await studentModel.findOneAndUpdate(
+            { studentId: studentId },
+            { 
+                $unset: { 
+                    routeId: "", 
+                    busStop: "" 
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({ 
+            message: 'Route and stop assignment removed successfully', 
+            student: updatedStudent 
+        });
+    } catch (error) {
+        console.error('Error removing route and stop assignment:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 
 
 module.exports = {
@@ -269,9 +349,12 @@ module.exports = {
     editDriver,
     deleteDriver,
     addRoute,
+    updateRoute,
     getRoutes,
     routeById,
     updateStudentRoute,
     updateDriverRoute,
-    deleteDriverRoute
+    deleteDriverRoute,
+    deleteRouteStudent,
+    deleteRoute
 }
