@@ -321,10 +321,6 @@ async function saveRoute() {
             busId: "B001",
             regNumber: "MY01AB1234"
         },
-        driver: {
-            driverId: "D001",
-            name: "Swetha"
-        },
         pickupTime: "07:30 AM",
         dropTime: "08:30 AM"
     };
